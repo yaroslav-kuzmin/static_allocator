@@ -1,0 +1,17 @@
+
+allocator=/home/yaroslav/work/infinet/allocator CD=/home/yaroslav/work/infinet/allocator filter="*.c *.h *.txt" {
+ CMakeLists.txt
+ include=include{
+  allocator.h
+ }
+ src=src {
+  allocator.c
+  allocator.h
+  CMakeLists.txt
+ }
+ test=test {
+  test_bitmap.c
+  test_main.c
+  CMakeLists.txt
+ }
+}
