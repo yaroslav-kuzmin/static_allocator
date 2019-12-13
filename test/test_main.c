@@ -28,7 +28,7 @@
 #define SUCCES     0
 #define FAILURE   -1
 
-#if NUMBER_BLOCK != 10 
+#if NUMBER_BLOCK != 10
 #error  "Для теста установите NUMBER_BLOCK равное 10"
 #endif
 /*****************************************************************************/
@@ -64,7 +64,7 @@ int main(int argc, char * argv[])
 	static_free(block[1]);
 	block[7] = NULL;
 	block[1] = NULL;
-	
+
 	block[7] = static_malloc();
 	if (block_1 != block[7]) {
 		printf_erorr("Check realloc 7");
@@ -83,7 +83,7 @@ int main(int argc, char * argv[])
 	for (int i=0; i< 10; ++i) {
 		static_free(block[i]);
 	}
-	block[10] = static_malloc();  
+	block[10] = static_malloc();
 	if (block_0 != block[10]) {
 		printf_erorr("Check free");
 		return FAILURE;
