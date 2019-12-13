@@ -26,8 +26,8 @@
 /*****************************************************************************/
 #define SIZE_BLOCK_BYTE   (UINT32_C(0x00000001) << SIZE_BLOCK_POWER2)
 #if (ADDRESS_BLOCK == 0)
-static uint8_t shadow_array[SIZE_BLOCK_BYTE * NUMBER_BLOCK] = {0}; 
-static uint8_t * array = shadow_array; 
+static uint8_t shadow_array[SIZE_BLOCK_BYTE * NUMBER_BLOCK] = {0};
+static uint8_t * array = shadow_array;
 static uint8_t * free_block = shadow_array;
 #else
 static uint8_t * array = ADDRESS_BLOCK;
@@ -50,7 +50,7 @@ void occuped_bitmap(t_counter_block number)
 	uint32_t mask = number - (position << NUMBER_BIT_POWER2);
 	mask = UINT32_C(0x00000001) << mask;
 	uint32_t *bitmap = bitmap_occuped_block + position;
-	*bitmap |= mask;	
+	*bitmap |= mask;
 }
 
 t_counter_block first_free_bitmap(t_counter_block number)
@@ -59,7 +59,7 @@ t_counter_block first_free_bitmap(t_counter_block number)
 	t_counter_block position = number >> NUMBER_BIT_POWER2;
 	t_counter_block bit_number = number - (position << NUMBER_BIT_POWER2);
 	uint32_t * bitmap = bitmap_occuped_block + position;
-	uint32_t bit = *bitmap;	
+	uint32_t bit = *bitmap;
 	bit >>= bit_number;
 	for(;position < NUMBER_BITMAP;) {
 		for(;bit_number < NUMBER_BIT;++bit_number){
@@ -67,11 +67,11 @@ t_counter_block first_free_bitmap(t_counter_block number)
 				return free_number;
 			}
 			++free_number;
-			bit >>=1; 
+			bit >>=1;
 		}
 		bit_number= 0;
 		++position;
-		++bitmap; 
+		++bitmap;
 		bit = *(bitmap);
 	}
 	return free_number;
@@ -84,7 +84,7 @@ void free_bitmap(t_counter_block number)
 	mask = UINT32_C(0x00000001) << mask;
 	mask = ~mask;
 	uint32_t * bitmap = bitmap_occuped_block + position;
-	*bitmap &= mask;	
+	*bitmap &= mask;
 }
 
 void * static_malloc(void)
@@ -93,7 +93,7 @@ void * static_malloc(void)
 	OPEN_ATOMIC_BLOCK;
 	if (counter_occuped_block != NUMBER_BLOCK) {
 		block = free_block;
-		free_block += SIZE_BLOCK_BYTE;	
+		free_block += SIZE_BLOCK_BYTE;
 		occuped_bitmap(counter_occuped_block);
 		++counter_occuped_block;
 		++number_occuped_block;

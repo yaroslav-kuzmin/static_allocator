@@ -29,7 +29,7 @@
 #define SUCCES     0
 #define FAILURE   -1
 
-#if NUMBER_BLOCK != 100 
+#if NUMBER_BLOCK != 100
 #error  "Для теста установите NUMBER_BLOCK равное 100"
 #endif
 
