@@ -23,6 +23,10 @@ set(SOURCES allocator.c)
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include) 
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
-target_compile_options(${PROJECT_NAME} PUBLIC -DSIZE_BLOCK=16 -DNUMBER_BLOCK=10 -DADDRESS_BLOCK=0)
+#SIZE_BLOCK_POWER2 - размер блока в байтах указывается степень двойки
+#NUMBER_BLOCK      - колличество блоков
+#NUMBER_BITMAP     - колличество блоков деленое на 32 бита, информация о блокох хранится в массиве uint32_t по битно, 
+#ADDRESS_BLOCK     - адрес начала блока данных, если 0 то выделяет массив
+target_compile_options(${PROJECT_NAME} PUBLIC -DSIZE_BLOCK_POWER2=3 -DNUMBER_BLOCK=30 -DNUMBER_BITMAP=1 -DADDRESS_BLOCK=0)
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIR})
 

@@ -6,7 +6,6 @@ allocator=/home/yaroslav/work/infinet/allocator CD=/home/yaroslav/work/infinet/a
  }
  src=src {
   allocator.c
-  allocator.h
   CMakeLists.txt
  }
  test=test {

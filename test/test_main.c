@@ -20,16 +20,76 @@
 /*****************************************************************************/
 
 #include <stdlib.h>
-#include <allocator.h>
 #include <stdio.h>
+#include <stdarg.h>
 
+#include <allocator.h>
+
+#define SUCCES     0
+#define FAILURE   -1
+
+#if NUMBER_BLOCK != 10 
+#error  "Для теста установите NUMBER_BLOCK равное 10"
+#endif
 /*****************************************************************************/
+void printf_erorr(char * str, ...)
+{
+	va_list arg;
+	va_start(arg,str);
+	printf("Error : ");
+	vprintf(str, arg);
+	printf("\n");
+	va_end(arg);
+}
 
 int main(int argc, char * argv[])
 {
-	printf("Test ");	
-	void * block = static_malloc();
+	printf("Test test_main %d\n", NUMBER_BLOCK);
 
-	return 0;
+/*****************************************************************************/
+	void * block[11] = {NULL};
+
+	for (int i = 0; i < 11;++i) {
+		block[i] = static_malloc();
+	}
+	if (block[10] != NULL) {
+		printf_erorr("check fill pool");
+		return FAILURE;
+	}
+
+/*****************************************************************************/
+	void * block_7 = block[7];
+	void * block_1 = block[1];
+	static_free(block[7]);
+	static_free(block[1]);
+	block[7] = NULL;
+	block[1] = NULL;
+	
+	block[7] = static_malloc();
+	if (block_1 != block[7]) {
+		printf_erorr("Check realloc 7");
+		return FAILURE;
+	}
+
+	block[1] = static_malloc();
+	if (block_7 != block[1]) {
+		printf_erorr("Check realloc 1");
+		return FAILURE;
+	}
+
+/*****************************************************************************/
+	void * block_0 = block[0];
+
+	for (int i=0; i< 10; ++i) {
+		static_free(block[i]);
+	}
+	block[10] = static_malloc();  
+	if (block_0 != block[10]) {
+		printf_erorr("Check free");
+		return FAILURE;
+	}
+/*****************************************************************************/
+	printf("Done\n");
+	return SUCCES;
 }
 /*****************************************************************************/

@@ -24,13 +24,9 @@
 #include <allocator.h>
 
 /*****************************************************************************/
-#define YES        1
-#define NO         0
-#define SUCCES     0
-#define FAILURE   -1
-
+#define SIZE_BLOCK_BYTE   (UINT32_C(0x00000001) << SIZE_BLOCK_POWER2)
 #if (ADDRESS_BLOCK == 0)
-static uint8_t shadow_array[SIZE_BLOCK * NUMBER_BLOCK] = {0}; 
+static uint8_t shadow_array[SIZE_BLOCK_BYTE * NUMBER_BLOCK] = {0}; 
 static uint8_t * array = shadow_array; 
 static uint8_t * free_block = shadow_array;
 #else
@@ -42,16 +38,16 @@ static t_counter_block counter_occuped_block = 0;
 static t_counter_block number_occuped_block = 0;
 static t_counter_block number_free_block = NUMBER_BLOCK;
 
-#define NUMBER_BIT    (sizeof(uint32_t) * 8)
-#define NUMBER_BIT_2  5
-#define SIZE_BITMAP   ((NUMBER_BLOCK / NUMBER_BIT) + 1) 
+/*колличество бит в 4 байтах*/
+#define NUMBER_BIT_POWER2  5
+#define NUMBER_BIT         (UINT32_C(0x00000001)<< NUMBER_BIT_POWER2)
 
-static uint32_t bitmap_occuped_block[SIZE_BITMAP] = {0};
+static uint32_t bitmap_occuped_block[NUMBER_BITMAP] = {0};
 
 void occuped_bitmap(t_counter_block number)
 {
-	t_counter_block position = number >> NUMBER_BIT_2;
-	uint32_t mask = number - (position << NUMBER_BIT_2);
+	t_counter_block position = number >> NUMBER_BIT_POWER2;
+	uint32_t mask = number - (position << NUMBER_BIT_POWER2);
 	mask = UINT32_C(0x00000001) << mask;
 	uint32_t *bitmap = bitmap_occuped_block + position;
 	*bitmap |= mask;	
@@ -60,12 +56,12 @@ void occuped_bitmap(t_counter_block number)
 t_counter_block first_free_bitmap(t_counter_block number)
 {
 	t_counter_block free_number = number;
-	t_counter_block position = number >> NUMBER_BIT_2;
-	t_counter_block bit_number = number - (position << NUMBER_BIT_2);
+	t_counter_block position = number >> NUMBER_BIT_POWER2;
+	t_counter_block bit_number = number - (position << NUMBER_BIT_POWER2);
 	uint32_t * bitmap = bitmap_occuped_block + position;
 	uint32_t bit = *bitmap;	
 	bit >>= bit_number;
-	for(;position < SIZE_BITMAP;) {
+	for(;position < NUMBER_BITMAP;) {
 		for(;bit_number < NUMBER_BIT;++bit_number){
 			if ((bit & 0x00000001) == 0) {
 				return free_number;
@@ -83,9 +79,9 @@ t_counter_block first_free_bitmap(t_counter_block number)
 
 void free_bitmap(t_counter_block number)
 {
-	t_counter_block position = number >> NUMBER_BIT_2;
-	uint32_t mask = number - (position << NUMBER_BIT_2);
-	mask = 0x00000001 << mask;
+	t_counter_block position = number >> NUMBER_BIT_POWER2;
+	uint32_t mask = number - (position << NUMBER_BIT_POWER2);
+	mask = UINT32_C(0x00000001) << mask;
 	mask = ~mask;
 	uint32_t * bitmap = bitmap_occuped_block + position;
 	*bitmap &= mask;	
@@ -97,7 +93,7 @@ void * static_malloc(void)
 	OPEN_ATOMIC_BLOCK;
 	if (counter_occuped_block != NUMBER_BLOCK) {
 		block = free_block;
-		free_block += SIZE_BLOCK;	
+		free_block += SIZE_BLOCK_BYTE;	
 		occuped_bitmap(counter_occuped_block);
 		++counter_occuped_block;
 		++number_occuped_block;
@@ -109,7 +105,7 @@ void * static_malloc(void)
 			++number_occuped_block;
 			if (number_occuped_block != NUMBER_BLOCK) {
 				number_free_block = first_free_bitmap(number_free_block);
-				free_block = array + (SIZE_BLOCK * number_free_block);
+				free_block = array + (SIZE_BLOCK_BYTE * number_free_block);
 			}
 			else {
 				number_free_block = NUMBER_BLOCK;
@@ -124,17 +120,24 @@ void * static_malloc(void)
 
 void static_free(void * block)
 {
-	void * begin_block = (void*)array;
 	OPEN_ATOMIC_BLOCK;
+	void * begin_block = (void*)array;
+	/*TODO проверка на некоррекный адрес*/
 	t_counter_block number = block - begin_block;
-	// TODO если размер блока кратен степени двойки можно смещать
-	number = number / SIZE_BLOCK;
+	number = number >> SIZE_BLOCK_POWER2;
 	free_bitmap(number);
 	--number_occuped_block;
-	if (number_free_block > number) {
-		number_free_block = number;
-		if (counter_occuped_block == NUMBER_BLOCK) {
-			free_block = array + (SIZE_BLOCK * number);
+	if (number_occuped_block == 0) {
+		counter_occuped_block = 0;
+		number_free_block = NUMBER_BLOCK;
+		free_block = array;
+	}
+	else {
+		if (number_free_block > number) {
+			number_free_block = number;
+			if (counter_occuped_block == NUMBER_BLOCK) {
+				free_block = array + (SIZE_BLOCK_BYTE * number);
+			}
 		}
 	}
 	CLOSE_ATOMIC_BLOCK;
