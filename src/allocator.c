@@ -43,7 +43,7 @@ static t_counter_block number_free_block = NUMBER_BLOCK;
 #define NUMBER_BIT         (UINT32_C(0x00000001)<< NUMBER_BIT_POWER2)
 
 static uint32_t bitmap_occuped_block[NUMBER_BITMAP] = {0};
-
+/*Установка бит в массиве битов указывает что блок занят*/
 void occuped_bitmap(t_counter_block number)
 {
 	t_counter_block position = number >> NUMBER_BIT_POWER2;
@@ -52,7 +52,7 @@ void occuped_bitmap(t_counter_block number)
 	uint32_t *bitmap = bitmap_occuped_block + position;
 	*bitmap |= mask;	
 }
-
+/*Возврашает номер первого свободного блока  , если номер равен колличеству блоков то все блоки заняты*/
 t_counter_block first_free_bitmap(t_counter_block number)
 {
 	t_counter_block free_number = number;
@@ -76,7 +76,7 @@ t_counter_block first_free_bitmap(t_counter_block number)
 	}
 	return free_number;
 }
-
+/*Снимает бит в массиве битов указывая что блок свободен*/
 void free_bitmap(t_counter_block number)
 {
 	t_counter_block position = number >> NUMBER_BIT_POWER2;
@@ -87,6 +87,7 @@ void free_bitmap(t_counter_block number)
 	*bitmap &= mask;	
 }
 
+/*возврашает указатель на свободный блок , если NULL все блоки заняты*/
 void * static_malloc(void)
 {
 	void * block = NULL;
@@ -117,7 +118,7 @@ void * static_malloc(void)
 	CLOSE_ATOMIC_BLOCK;
 	return block;
 }
-
+/*высвобождает блок*/
 void static_free(void * block)
 {
 	OPEN_ATOMIC_BLOCK;
